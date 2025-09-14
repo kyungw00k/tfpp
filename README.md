@@ -135,9 +135,9 @@ tfpp/
 └── docs/                   # Documentation and examples
 ```
 
-## 📋 Development Progress
+## 📋 Development Status
 
-See [IMPLEMENTATION_CHECKLIST.md](IMPLEMENTATION_CHECKLIST.md) for detailed progress tracking.
+All core features have been implemented and tested. TFPP is ready for production use!
 
 ## 🔧 Development
 
@@ -169,7 +169,7 @@ java -jar app/build/libs/tfpp.jar --help
 
 - **FMPP Manual**: https://fmpp.sourceforge.net/manual.html
 - **Thymeleaf Documentation**: https://www.thymeleaf.org/doc/tutorials/3.1/usingthymeleaf.html
-- **Project Plan**: [PROJECT_PLAN.md](PROJECT_PLAN.md)
+- **Documentation**: [GitHub Pages](https://kyungw00k.github.io/tfpp/)
 
 ## 🤝 Contributing
 

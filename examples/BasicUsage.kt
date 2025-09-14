@@ -194,7 +194,7 @@ object AdvancedUsage {
         val templateEngine = TemplateEngine()
         
         val data = mapOf(
-            "publishDate" to "2024-09-11T10:00:00",
+            "publishDate" to "2025-01-15T10:00:00",
             "title" to "getting started with tfpp",
             "price" to 29.99
         )

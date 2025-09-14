@@ -14,7 +14,7 @@ dataFiles:
 # Global variables (can be overridden by CLI)
 variables:
   environment: "production"
-  buildTime: "2024-09-11T13:40:00Z"
+  buildTime: "2025-01-15T13:40:00Z"
   version: "1.0.0"
 
 # Template file extensions to process
