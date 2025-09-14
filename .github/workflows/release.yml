@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
@@ -29,13 +32,9 @@ jobs:
       run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
     
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.ref }}
-        release_name: TFPP ${{ steps.get_version.outputs.VERSION }}
+        name: TFPP ${{ steps.get_version.outputs.VERSION }}
         body: |
           ## TFPP (Thymeleaf File Preprocessor) ${{ steps.get_version.outputs.VERSION }}
           
@@ -43,12 +42,12 @@ jobs:
           
           **Quick install:**
           ```bash
-          curl -fsSL https://raw.githubusercontent.com/kyungw00k/tfpp/main/install-remote.sh | sudo bash
+          curl -fsSL https://raw.githubusercontent.com/kyungw00k/tfpp/main/install.sh | sudo bash
           ```
           
           **Custom directory:**
           ```bash
-          curl -fsSL https://raw.githubusercontent.com/kyungw00k/tfpp/main/install-remote.sh | bash -s ~/bin
+          curl -fsSL https://raw.githubusercontent.com/kyungw00k/tfpp/main/install.sh | bash -s ~/bin
           ```
           
           ### Manual Installation
@@ -65,15 +64,7 @@ jobs:
           - Configuration file support
           
           For more information, see the [README](https://github.com/kyungw00k/tfpp/blob/main/README.md).
+        files: |
+          ./app/build/libs/tfpp.jar
         draft: false
         prerelease: false
-    
-    - name: Upload JAR Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./app/build/libs/tfpp.jar
-        asset_name: tfpp.jar
-        asset_content_type: application/java-archive
