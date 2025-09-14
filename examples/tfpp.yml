@@ -1,0 +1,42 @@
+# TFPP Configuration File Example
+
+# Source directory containing templates
+sourceDir: "templates"
+
+# Output directory for processed files
+outputDir: "dist"
+
+# Data files to load (JSON/YAML)
+dataFiles:
+  - "data/site.yaml"
+  - "data/content.json"
+
+# Global variables (can be overridden by CLI)
+variables:
+  environment: "production"
+  buildTime: "2024-09-11T13:40:00Z"
+  version: "1.0.0"
+
+# Template file extensions to process
+templateExtensions:
+  - "html"
+  - "htm" 
+  - "txt"
+  - "md"
+  - "css"
+  - "js"
+
+# Copy non-template files to output
+copyAssets: true
+
+# Watch for file changes (development mode)
+watch: false
+
+# Enable verbose logging
+verbose: false
+
+# File encoding
+encoding: "UTF-8"
+
+# Default template mode (HTML, TEXT, CSS, JAVASCRIPT)
+templateMode: "HTML"

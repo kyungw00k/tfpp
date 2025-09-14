@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        java: ['17', '21']
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK ${{ matrix.java }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java }}
+        distribution: 'temurin'
+    
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+    
+    - name: Run tests
+      run: ./gradlew test
+    
+    - name: Build JAR
+      run: ./gradlew jar
+    
+    - name: Test CLI (Unix)
+      if: runner.os != 'Windows'
+      run: |
+        chmod +x bin/tfpp
+        ./bin/tfpp --help
+        echo "name: Test" > test.txt
+        echo "Hello [(${name})]!" > template.txt
+        ./bin/tfpp process template.txt --var name="CI Test" > output.txt
+        grep "Hello CI Test!" output.txt
+    
+    - name: Test CLI (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        java -jar app/build/libs/tfpp.jar --help
+        echo "name: Test" > test.txt
+        echo "Hello [(${name})]!" > template.txt
+        java -jar app/build/libs/tfpp.jar process template.txt --var name="CI Test" > output.txt
+        findstr "Hello CI Test!" output.txt
+
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+    
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+    
+    - name: Build JAR
+      run: ./gradlew jar
+    
+    - name: Test directory processing
+      run: |
+        chmod +x bin/tfpp
+        mkdir -p test-templates
+        echo '<h1 th:text="${title}">Default Title</h1>' > test-templates/index.html
+        echo 'Text: [(${content})]' > test-templates/readme.txt
+        echo '{"title": "TFPP Test", "content": "Integration testing"}' > data.json
+        ./bin/tfpp process-dir test-templates output --data data.json --verbose
+        grep "TFPP Test" output/index.html
+        grep "Integration testing" output/readme.txt
+    
+    - name: Test installation script
+      run: |
+        chmod +x install.sh
+        mkdir -p test-bin
+        ./install.sh test-bin
+        test-bin/tfpp --help

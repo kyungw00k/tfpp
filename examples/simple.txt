@@ -1,0 +1,6 @@
+Hello [(${name})]!
+
+This is a simple text template.
+Your age is [(${age})] years old.
+
+Today is a great day for [(${activity})]!

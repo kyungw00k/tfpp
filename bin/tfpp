@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# TFPP (Thymeleaf File Preprocessor) Wrapper Script
+# Usage: tfpp [options] <command> [args...]
+
+# Determine the script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TFPP_HOME="$(dirname "$SCRIPT_DIR")"
+
+# Set JAVA_HOME if not already set
+export JAVA_HOME="${JAVA_HOME:-$(which java | xargs dirname | xargs dirname)}"
+
+# Check if Java is available
+if [ ! -x "${JAVA_HOME}/bin/java" ] && ! command -v java >/dev/null 2>&1; then
+    echo "Error: Java not found. Please install Java or set JAVA_HOME." >&2
+    exit 1
+fi
+
+# Determine Java executable
+if [ -x "${JAVA_HOME}/bin/java" ]; then
+    JAVA_CMD="${JAVA_HOME}/bin/java"
+else
+    JAVA_CMD="java"
+fi
+
+# TFPP JAR location
+TFPP_JAR="${TFPP_HOME}/app/build/libs/tfpp.jar"
+
+# Check if JAR exists
+if [ ! -f "$TFPP_JAR" ]; then
+    echo "Error: TFPP JAR not found at $TFPP_JAR" >&2
+    echo "Please build TFPP first by running: ./gradlew jar" >&2
+    exit 1
+fi
+
+# JVM options (can be overridden by environment variables)
+JVM_OPTS="${TFPP_JVM_OPTS:--Xmx512m}"
+
+# Execute TFPP
+exec "$JAVA_CMD" $JVM_OPTS $TFPP_OPTS -jar "$TFPP_JAR" "$@"
