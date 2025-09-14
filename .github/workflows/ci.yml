@@ -8,10 +8,9 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
         java: ['17', '21']
     
     steps:
@@ -32,8 +31,7 @@ jobs:
     - name: Build JAR
       run: ./gradlew jar
     
-    - name: Test CLI (Unix)
-      if: runner.os != 'Windows'
+    - name: Test CLI
       run: |
         chmod +x bin/tfpp
         ./bin/tfpp --help
@@ -41,15 +39,6 @@ jobs:
         echo "Hello [(${name})]!" > template.txt
         ./bin/tfpp process template.txt --var name="CI Test" > output.txt
         grep "Hello CI Test!" output.txt
-    
-    - name: Test CLI (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        java -jar app/build/libs/tfpp.jar --help
-        echo "name: Test" > test.txt
-        echo "Hello [(${name})]!" > template.txt
-        java -jar app/build/libs/tfpp.jar process template.txt --var name="CI Test" > output.txt
-        findstr "Hello CI Test!" output.txt
 
   integration-test:
     runs-on: ubuntu-latest

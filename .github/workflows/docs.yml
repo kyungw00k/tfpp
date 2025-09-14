@@ -1,12 +1,21 @@
 name: Deploy Documentation
 
 on:
+  # Deploy docs after successful release
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
+    branches: [ main ]
+  
+  # Also deploy on docs changes
   push:
     branches: [ main ]
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
       - '.github/workflows/docs.yml'
+  
   pull_request:
     branches: [ main ]
     paths:
