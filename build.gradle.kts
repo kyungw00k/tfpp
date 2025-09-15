@@ -2,7 +2,7 @@ repositories {
     mavenCentral()
 }
 
-version = "1.0.0"
+version = project.findProperty("version") ?: "0.0.1-SNAPSHOT"
 
 plugins {
     id("ru.vyarus.mkdocs") version "4.0.1"

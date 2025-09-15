@@ -7,22 +7,8 @@ on:
     types:
       - completed
     branches: [ main ]
-  
-  # Also deploy on docs changes
-  push:
-    branches: [ main ]
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - '.github/workflows/docs.yml'
-  
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
 
-  # Allow manual deployment
+  # Allow manual deployment for testing
   workflow_dispatch:
 
 permissions:
