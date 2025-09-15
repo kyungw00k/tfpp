@@ -61,10 +61,31 @@ get_latest_version() {
     print_step "Fetching latest version information..."
     
     local latest_version
+    
+    # Try GitHub API first
     latest_version=$(curl -s "https://api.github.com/repos/${GITHUB_REPO}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/' 2>/dev/null || echo "")
     
+    # If API fails (rate limit), try parsing releases page
+    if [ -z "$latest_version" ] || [[ "$latest_version" == *"rate limit"* ]]; then
+        print_warning "GitHub API unavailable, trying alternative method..."
+        latest_version=$(curl -s "https://github.com/${GITHUB_REPO}/releases/latest" | grep -o 'href="/[^"]*/releases/tag/v[0-9][^"]*"' | head -1 | sed -E 's|.*tag/([^"]+)".*|\1|' 2>/dev/null || echo "")
+    fi
+    
+    # If still no version found, try known recent versions
     if [ -z "$latest_version" ]; then
-        print_warning "Could not fetch latest version from GitHub API"
+        print_warning "Could not fetch latest version, trying known recent versions..."
+        # Try a few recent versions that might exist
+        for version in "v1.0.2" "v1.0.1" "v1.0.0"; do
+            if curl -s -I "https://github.com/${GITHUB_REPO}/releases/download/${version}/tfpp.jar" | grep -q "HTTP/2 302\|HTTP/1.1 302\|HTTP/2 200\|HTTP/1.1 200"; then
+                latest_version="$version"
+                print_info "Found working version: $latest_version"
+                break
+            fi
+        done
+    fi
+    
+    if [ -z "$latest_version" ]; then
+        print_warning "No releases found"
         echo "main"
     else
         print_info "Latest version: $latest_version"
