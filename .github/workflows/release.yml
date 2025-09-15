@@ -1,6 +1,15 @@
 name: Release
 
 on:
+  # Manual release trigger
+  workflow_dispatch:
+  
+  # Auto-release when PR with "release" label is merged to main
+  pull_request:
+    types: [closed]
+    branches: [main]
+  
+  # Legacy: support direct tag pushes
   push:
     tags:
       - 'v*'
@@ -11,9 +20,17 @@ permissions:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'workflow_dispatch') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'release')) ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/'))
     
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -24,19 +41,54 @@ jobs:
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
     
+    - name: Calculate version or get from tag
+      id: get_version
+      run: |
+        if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
+          # Legacy: version from existing tag
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          echo "SKIP_TAG=true" >> $GITHUB_OUTPUT
+        else
+          echo "SKIP_TAG=false" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Calculate semantic version
+      id: calculate-version
+      if: steps.get_version.outputs.SKIP_TAG == 'false'
+      uses: bitshifted/git-auto-semver@v2
+    
+    - name: Set calculated version
+      if: steps.get_version.outputs.SKIP_TAG == 'false'
+      run: |
+        VERSION="v${{ steps.calculate-version.outputs.version-string }}"
+        echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+        
+        # Check if tag already exists
+        if git rev-parse "${VERSION}" >/dev/null 2>&1; then
+          echo "Tag ${VERSION} already exists, exiting"
+          exit 1
+        fi
+      id: set_version
+    
+    - name: Create and push tag
+      if: steps.get_version.outputs.SKIP_TAG == 'false'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        VERSION="${{ steps.set_version.outputs.VERSION || steps.get_version.outputs.VERSION }}"
+        git tag "${VERSION}"
+        git push origin "${VERSION}"
+    
     - name: Build JAR
       run: ./gradlew jar
-    
-    - name: Get version from tag
-      id: get_version
-      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
     
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        name: TFPP ${{ steps.get_version.outputs.VERSION }}
+        name: TFPP ${{ steps.set_version.outputs.VERSION || steps.get_version.outputs.VERSION }}
+        tag_name: ${{ steps.set_version.outputs.VERSION || steps.get_version.outputs.VERSION }}
         body: |
-          ## TFPP (Thymeleaf File Preprocessor) ${{ steps.get_version.outputs.VERSION }}
+          ## TFPP (Thymeleaf File Preprocessor) ${{ steps.set_version.outputs.VERSION || steps.get_version.outputs.VERSION }}
           
           ### Installation
           
