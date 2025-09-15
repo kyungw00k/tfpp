@@ -6,7 +6,7 @@ This guide will help you get up and running with TFPP quickly.
 
 Before you start, make sure you have:
 
-- **Java 21+** installed on your system
+- **Java 17+** installed on your system
 - Basic familiarity with **command line tools**
 - Understanding of **template concepts** (helpful but not required)
 
