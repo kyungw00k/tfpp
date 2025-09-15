@@ -36,7 +36,7 @@ jobs:
         chmod +x bin/tfpp
         ./bin/tfpp --help
         echo "name: Test" > test.txt
-        echo "Hello [(${name})]!" > template.txt
+        echo 'Hello [[${name}]]!' > template.txt
         ./bin/tfpp process template.txt --var name="CI Test" > output.txt
         grep "Hello CI Test!" output.txt
 
