@@ -58,7 +58,7 @@ check_java() {
 
 # Get latest release version from GitHub
 get_latest_version() {
-    print_step "Fetching latest version information..."
+    print_step "Fetching latest version information..." >&2
     
     local latest_version
     
@@ -67,28 +67,28 @@ get_latest_version() {
     
     # If API fails (rate limit), try parsing releases page
     if [ -z "$latest_version" ] || [[ "$latest_version" == *"rate limit"* ]]; then
-        print_warning "GitHub API unavailable, trying alternative method..."
+        print_warning "GitHub API unavailable, trying alternative method..." >&2
         latest_version=$(curl -s "https://github.com/${GITHUB_REPO}/releases/latest" | grep -o 'href="/[^"]*/releases/tag/v[0-9][^"]*"' | head -1 | sed -E 's|.*tag/([^"]+)".*|\1|' 2>/dev/null || echo "")
     fi
     
     # If still no version found, try known recent versions
     if [ -z "$latest_version" ]; then
-        print_warning "Could not fetch latest version, trying known recent versions..."
+        print_warning "Could not fetch latest version, trying known recent versions..." >&2
         # Try a few recent versions that might exist
         for version in "v1.0.2" "v1.0.1" "v1.0.0"; do
             if curl -s -I "https://github.com/${GITHUB_REPO}/releases/download/${version}/tfpp.jar" | grep -q "HTTP/2 302\|HTTP/1.1 302\|HTTP/2 200\|HTTP/1.1 200"; then
                 latest_version="$version"
-                print_info "Found working version: $latest_version"
+                print_info "Found working version: $latest_version" >&2
                 break
             fi
         done
     fi
     
     if [ -z "$latest_version" ]; then
-        print_warning "No releases found"
+        print_warning "No releases found" >&2
         echo "main"
     else
-        print_info "Latest version: $latest_version"
+        print_info "Latest version: $latest_version" >&2
         echo "$latest_version"
     fi
 }
@@ -98,25 +98,25 @@ download_jar_from_github() {
     local version="$1"
     
     if [ "$version" = "main" ]; then
-        print_error "No releases available on GitHub"
-        print_info "Please build TFPP locally:"
-        echo "  git clone https://github.com/${GITHUB_REPO}.git"
-        echo "  cd tfpp && ./gradlew jar && ./install.sh"
+        print_error "No releases available on GitHub" >&2
+        print_info "Please build TFPP locally:" >&2
+        echo "  git clone https://github.com/${GITHUB_REPO}.git" >&2
+        echo "  cd tfpp && ./gradlew jar && ./install.sh" >&2
         exit 1
     fi
     
     local jar_url="${GITHUB_RELEASES_URL}/download/${version}/tfpp.jar"
     local temp_jar="/tmp/tfpp-${version}.jar"
     
-    print_step "Downloading TFPP JAR from GitHub releases..."
-    print_info "URL: $jar_url"
+    print_step "Downloading TFPP JAR from GitHub releases..." >&2
+    print_info "URL: $jar_url" >&2
     
-    if curl -fsSL "$jar_url" -o "$temp_jar"; then
-        print_info "Downloaded JAR successfully"
+    if curl -fsSL "$jar_url" -o "$temp_jar" 2>/dev/null; then
+        print_info "Downloaded JAR successfully" >&2
         echo "$temp_jar"
     else
-        print_error "Failed to download JAR from GitHub releases"
-        print_info "Please check if the release exists or build from source"
+        print_error "Failed to download JAR from GitHub releases" >&2
+        print_info "Please check if the release exists or build from source" >&2
         exit 1
     fi
 }
