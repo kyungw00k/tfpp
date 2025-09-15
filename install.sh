@@ -213,7 +213,7 @@ if [ ! -f "$TFPP_JAR" ]; then
 fi
 
 # JVM options (can be overridden by environment variables)
-JVM_OPTS="${TFPP_JVM_OPTS:--Xmx512m}"
+JVM_OPTS="${TFPP_JVM_OPTS:--Xmx512m --enable-native-access=ALL-UNNAMED}"
 
 # Execute TFPP
 exec "$JAVA_CMD" $JVM_OPTS $TFPP_OPTS -jar "$TFPP_JAR" "$@"
